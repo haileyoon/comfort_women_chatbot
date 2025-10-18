@@ -1,20 +1,34 @@
-from flask import Flask, jsonify, render_template, request
-from chat import chatbot_response
+from flask import Flask, request, jsonify, render_template, session
+from src.rag import chatbot_response
+import os
+from dotenv import load_dotenv
+from src.tools import get_response
 
+load_dotenv()
 app = Flask(__name__)
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "default_secret_key")
 
-# Serve the HTML page
-@app.route("/")
-def home():
-    return render_template("index.html")
+@app.route('/')
+def index():
+    return render_template('chatbot.html')
 
-# API endpoint to receive user input and return bot response
-@app.route("/chat", methods=["POST"])
+@app.route('/chat', methods=['POST'])
 def chat():
-    data = request.get_json() or {}
-    user_prompt = data.get("question", "")
-    reply = chatbot_response(user_prompt)
-    return jsonify(response=reply)
+    data = request.get_json()
+    question = data.get('question', '')
+    if not question:
+        return jsonify({'response': 'No question provided.'})
+    # Retrieve chat history from session
+    chat_history = session.get('chat_history', [])
+    chat_history.append({"role": "user", "content": question})
+    # Call chatbot_response with chat history
+    response_text = chatbot_response(question, chat_history)
+    chat_history.append({"role": "assistant", "content": response_text})
+    session['chat_history'] = chat_history
+    MAX_HISTORY = 20
+    chat_history = chat_history[-MAX_HISTORY:]
+    session['chat_history'] = chat_history
+    return jsonify({'response': response_text})
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)
