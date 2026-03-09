@@ -37,8 +37,7 @@ def get_response(question: str):
     key_terms = [w for w in question.lower().split() if w in ["address", "location", "house", "sharing"]]
     top_chunk = matches[0]['metadata']['chunk_text'].lower() if matches else ""
     if not matches or not any(term in top_chunk for term in key_terms):
-        # Keyword fallback
-        file_path = "/Users/haileyoon/code/comfortwomen_text.txt"
+        file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'comfortwomen_text.txt'))
         with open(file_path, encoding="utf-8") as f:
             raw = f.read()
         paragraphs = [p.strip() for p in raw.split("\n\n") if p.strip()]
