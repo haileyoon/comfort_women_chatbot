@@ -76,7 +76,7 @@ def chatbot_response(user_input: str, chat_history=None):
             {"role": "system", "content": (
                 "You are a helpful assistant. "
                 "Answer ONLY using the information provided by the function call below. "
-                "If the answer is not contained in the provided information, reply with \"I don't know based on the provided information.\" "
+                "If the answer is not contained in the provided information, reply with \"I don't know based on my database provided by the museum.\" "
                 "Do NOT use any outside knowledge. "
                 "Only mention information that is highly relevant to the user's question. "
                 "Keep your response concise and do not include unnecessary details."
