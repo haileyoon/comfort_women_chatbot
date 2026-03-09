@@ -73,8 +73,19 @@ def chatbot_response(user_input: str, chat_history=None):
             return "Unknown function call: " + func_name
         # build followup messages with system first, then history, then user, then the function result
         followup_messages = [
-            {"role": "system", "content": "Reply to the user with the most helpful and relevant information. Use the information provided by the function call as your main source; you may supplement only if necessary."}
+            {"role": "system", "content": (
+                "You are a helpful assistant. "
+                "Answer ONLY using the information provided by the function call below. "
+                "If the answer is not contained in the provided information, reply with \"I don't know based on the provided information.\" "
+                "Do NOT use any outside knowledge. "
+                "Only mention information that is highly relevant to the user's question. "
+                "Keep your response concise and do not include unnecessary details."
+            )}
         ] + chat_history + [
+            {"role": "user", "content": (
+                "Remember: Only use the information provided by the function call. "
+                "If the answer is not there, say you don't know."
+            )},
             {"role": "user", "content": user_input},
             message,
             {
@@ -85,9 +96,10 @@ def chatbot_response(user_input: str, chat_history=None):
         ]
         try:
             followup = client.chat.completions.create(
-                model = "gpt-4o-mini",
-                messages = followup_messages,
-            )
+            model = "gpt-4o-mini",
+            messages = followup_messages,
+            max_tokens = 200,  # adjust as needed
+        )
         except Exception as e:
             return f"Error calling LLM for followup: {e}"
         return followup.choices[0].message.content
